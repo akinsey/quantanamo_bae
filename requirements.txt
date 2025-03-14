@@ -1,6 +1,7 @@
 # Core data, math, and ML
 numpy==1.26.4
 pandas==2.2.3
+vermin==1.6.0
 scikit-learn==1.6.1
 scipy==1.15.2
 joblib==1.4.2

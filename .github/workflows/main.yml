@@ -39,26 +39,9 @@ jobs:
 
       - name: Check Python Compatibility with Vermin
         run: |
-          pip install vermin
-          set +e
-          # Use find with -print0 and xargs -0 to pass only Python files to vermin
-          find . -type f -name '*.py' -print0 | xargs -0 vermin --target=${{ env.PYTHON_VERSION }} \
-                 --violations \
-                 --backport argparse \
-                 --backport asyncio \
-                 --backport configparser \
-                 --backport dataclasses \
-                 --backport enum \
-                 --backport importlib \
-                 --backport ipaddress \
-                 --backport mock \
-                 --backport typing \
-                 --backport typing_extensions \
-                 --no-parse-comments \
-                 --eval-annotations
-          EXIT_CODE=$?
-          echo "Vermin exit code: $EXIT_CODE"
-          exit $EXIT_CODE
+          # Ensure the script is executable and run it.
+          chmod +x .github/workflows/scripts/run_vermin.sh
+          ./.github/workflows/scripts/run_vermin.sh
 
       - name: Fake Temp Test
         run: |
