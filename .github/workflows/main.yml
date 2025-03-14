@@ -57,7 +57,7 @@ jobs:
                  --backport typing_extensions \
                  --no-parse-comments \
                  --eval-annotations \
-                 .
+                 ./*
           EXIT_CODE=$?
           echo "Vermin exit code: $EXIT_CODE"
           exit $EXIT_CODE
