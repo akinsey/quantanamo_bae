@@ -39,11 +39,10 @@ jobs:
 
       - name: Check Python Compatibility with Vermin
         run: |
-          # Install Vermin
           pip install vermin
-          # Run Vermin using your specified command
           set +e
-          vermin --target=${{ env.PYTHON_VERSION }} \
+          # Use find with -print0 and xargs -0 to pass only Python files to vermin
+          find . -type f -name '*.py' -print0 | xargs -0 vermin --target=${{ env.PYTHON_VERSION }} \
                  --violations \
                  --backport argparse \
                  --backport asyncio \
@@ -56,8 +55,7 @@ jobs:
                  --backport typing \
                  --backport typing_extensions \
                  --no-parse-comments \
-                 --eval-annotations \
-                 ./*
+                 --eval-annotations
           EXIT_CODE=$?
           echo "Vermin exit code: $EXIT_CODE"
           exit $EXIT_CODE
