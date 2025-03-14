@@ -1,4 +1,4 @@
-Prototype money printer
+# Prototype money printer
 
 ```bash
 # get python version required for this project
