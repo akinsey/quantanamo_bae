@@ -1,3 +1,5 @@
+# ai_model.py
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -13,7 +15,9 @@ def train_ai_model(data):
     time.sleep(1)
 
     data = data.dropna()
-    X = data[['SMA_20', 'SMA_50']]
+
+    # Replace the old columns ['SMA_20', 'SMA_50'] with the new ones
+    X = data[['SMA_short', 'SMA_long']]
     y = np.where(data['Close'].shift(-1) > data['Close'], 1, 0).flatten()
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)

@@ -28,7 +28,7 @@ def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=
 
         # Determine trade signal
         if use_ai and model is not None and scaler is not None:
-            features = np.array([[data.iloc[i]['SMA_20'], data.iloc[i]['SMA_50']]], dtype=np.float64)
+            features = np.array([[data.iloc[i]['SMA_short'], data.iloc[i]['SMA_long']]], dtype=np.float64)
             features_scaled = scaler.transform(features.reshape(1, -1))
             ai_signal = model.predict(features_scaled)[0]
             trade_signal = int(ai_signal)
