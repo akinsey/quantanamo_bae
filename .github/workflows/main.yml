@@ -10,6 +10,12 @@ on:
   schedule:
     - cron: "0 12 * * MON-FRI"  # Runs every weekday at 12:00 UTC
 
+
+# Grant explicit permissions to the workflow
+permissions:
+  contents: write  # allows pushing tags and commits
+  issues: write    # allows creating issues/comments
+
 # Define an environment variable that holds the Python version
 env:
   PYTHON_VERSION: "3.12"
