@@ -42,24 +42,24 @@ jobs:
       #   if: github.event_name == 'push' || github.event_name == 'schedule'
       #   run: python main.py
 
-release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+  release:
+      needs: build
+      runs-on: ubuntu-latest
+      if: github.ref == 'refs/heads/main'
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
+        - name: Set up Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: "18"
 
-      - name: Install Semantic Release
-        run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
+        - name: Install Semantic Release
+          run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
 
-      - name: Run Semantic Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: semantic-release
+        - name: Run Semantic Release
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: semantic-release
