@@ -39,9 +39,28 @@ jobs:
 
       - name: Check Python Compatibility with Vermin
         run: |
-          # Ensure the script is executable and run it.
-          chmod +x .github/workflows/scripts/run_vermin.sh
-          ./.github/workflows/scripts/run_vermin.sh
+          pip install vermin
+          set +e
+          echo "Scanning the following Python files:"
+          find . -type f -name '*.py'
+          # Use find to only pass Python files
+          find . -type f -name '*.py' -print0 | xargs -0 vermin --verbose --target=${{ env.PYTHON_VERSION }}- \
+                 --violations \
+                 --backport argparse \
+                 --backport asyncio \
+                 --backport configparser \
+                 --backport dataclasses \
+                 --backport enum \
+                 --backport importlib \
+                 --backport ipaddress \
+                 --backport mock \
+                 --backport typing \
+                 --backport typing_extensions \
+                 --no-parse-comments \
+                 --eval-annotations
+          EXIT_CODE=$?
+          echo "Vermin exit code: $EXIT_CODE"
+          exit $EXIT_CODE
 
       - name: Fake Temp Test
         run: |
