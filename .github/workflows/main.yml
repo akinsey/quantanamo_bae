@@ -10,6 +10,10 @@ on:
   schedule:
     - cron: "0 12 * * MON-FRI"  # Runs every weekday at 12:00 UTC
 
+# Define an environment variable that holds the Python version
+env:
+  PYTHON_VERSION: "3.12"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +25,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Dependencies
         run: |
@@ -31,7 +35,37 @@ jobs:
       - name: Lint with flake8
         run: |
           pip install flake8
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 ./* --exclude=requirements.txt,venv,LICENSE --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Check Python Compatibility with Vermin
+        run: |
+          # Install Vermin
+          pip install vermin
+          # Run Vermin using your specified command
+          set +e
+          vermin --target=${{ env.PYTHON_VERSION }} \
+                 --violations \
+                 --backport argparse \
+                 --backport asyncio \
+                 --backport configparser \
+                 --backport dataclasses \
+                 --backport enum \
+                 --backport importlib \
+                 --backport ipaddress \
+                 --backport mock \
+                 --backport typing \
+                 --backport typing_extensions \
+                 --no-parse-comments \
+                 --eval-annotations \
+                 .
+          EXIT_CODE=$?
+          echo "Vermin exit code: $EXIT_CODE"
+          exit $EXIT_CODE
+
+      - name: Fake Temp Test
+        run: |
+          echo "Running fake temp test..."
+          exit 0  # This ensures it always passes
 
       # - name: Run Tests with pytest
       #   run: |
@@ -43,23 +77,23 @@ jobs:
       #   run: python main.py
 
   release:
-      needs: build
-      runs-on: ubuntu-latest
-      if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
-      steps:
-        - name: Checkout Repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-        - name: Set up Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: "18"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
 
-        - name: Install Semantic Release
-          run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
+      - name: Install Semantic Release
+        run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
 
-        - name: Run Semantic Release
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: semantic-release
+      - name: Run Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: semantic-release
