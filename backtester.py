@@ -4,13 +4,20 @@ import pandas as pd
 from rich.console import Console
 from rich.table import Table
 from config import MIN_PROFIT_THRESHOLD, STOP_LOSS_THRESHOLD, STOCK_SYMBOL
-from plotter import plot_trading_strategy  # Import the new plotter module
+from plotter import plot_trading_strategy  # Import the plotter for visualization
 
 logger = logging.getLogger(__name__)
 console = Console()
 
 def calculate_trade_statistics(trades, initial_capital, final_value, total_days):
-    """Compute key performance metrics from backtest results."""
+    """
+    Compute key performance metrics from backtest results.
+    :param trades: List of trade records
+    :param initial_capital: Starting capital
+    :param final_value: Ending portfolio value
+    :param total_days: Number of days in the backtest
+    :return: Dictionary of performance metrics
+    """
     trades_df = pd.DataFrame(trades, columns=["Date", "Action", "Price", "Shares", "Profit %", "Days Held"])
 
     if trades_df.empty:
@@ -39,11 +46,17 @@ def calculate_trade_statistics(trades, initial_capital, final_value, total_days)
 
     # Log performance metrics
     logger.info(f"Performance Metrics: {stats}")
-
     return stats
 
 def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=None):
-    """Backtest the trading strategy using historical data."""
+    """
+    Backtest the trading strategy using historical data.
+    :param data: Pandas DataFrame containing stock data
+    :param initial_capital: Starting capital for trading
+    :param use_ai: Boolean flag to use AI model or traditional signals
+    :param model: AI model for predictions (optional)
+    :param scaler: Scaler for AI feature normalization (optional)
+    """
     logger.info("Starting backtest...")
 
     capital = initial_capital
@@ -63,7 +76,7 @@ def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=
         if trade_start_date is None:
             trade_start_date = current_date
 
-        # Determine trade signal
+        # Determine trade signal (AI or traditional)
         if use_ai and model is not None and scaler is not None:
             features = np.array([[data.iloc[i]['SMA_short'], data.iloc[i]['SMA_long']]], dtype=np.float64)
             features_scaled = scaler.transform(features.reshape(1, -1))
@@ -123,7 +136,7 @@ def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=
 
     console.print(metrics_table)
 
-    # Call the new plot function
+    # Call the plot function for visualization
     plot_trading_strategy(data, STOCK_SYMBOL, buy_signals, sell_signals)
 
     logger.info("Backtest complete.")
