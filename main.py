@@ -1,7 +1,7 @@
 import logging # main.py
 from config import *
 from data_loader import fetch_historical_data
-from strategy import generate_trading_signals
+from strategy import apply_strategy
 from ai_model import train_ai_model
 from backtester import backtest_trading_strategy
 
@@ -16,21 +16,26 @@ if __name__ == "__main__":
     try:
         logger.info("Welcome to Quantanamo Bae")
 
+        # Fetch historical stock data
         data = fetch_historical_data(STOCK_SYMBOL, TRADE_WINDOW_START_DATE, TRADE_WINDOW_END_DATE)
 
         if data.empty:
             logger.error("No data retrieved. Exiting program.")
-            exit(1)  # Exit with error code 1
+            exit(1)
 
-        data = generate_trading_signals(data)
+        # Apply selected trading strategy
+        data = apply_strategy(data, "sma_crossover")  # Can change dynamically in config.py
 
+        # Train AI Model if enabled
         model, scaler = None, None
         if USE_AI:
             model, scaler = train_ai_model(data)
 
+        # Run Backtest
         backtest_trading_strategy(data, INITIAL_CAPITAL, USE_AI, model, scaler)
 
-        logger.info("We hope you enjoyed your stay")
+        logger.info("We hope you enjoyed your stay.")
+
     except Exception as e:
         logger.critical(f"Fatal error: {e}", exc_info=True)
         exit(1)

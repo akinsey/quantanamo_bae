@@ -1,40 +1,92 @@
-import logging # strategy.py
-logger = logging.getLogger(__name__)
+import pandas as pd
+from config import STOCK_SYMBOL
 
-import numpy as np
-from config import SMA_SHORT_WINDOW, SMA_LONG_WINDOW
+def flatten_columns(data):
+    """Flattens multi-index column names from Yahoo Finance."""
+    if isinstance(data.columns, pd.MultiIndex):
+        data.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in data.columns]
+    return data
 
-def generate_trading_signals(data):
-    """
-    Generate trading signals based on rolling averages.
-    Uses SMA_SHORT_WINDOW and SMA_LONG_WINDOW from config.py.
-    """
-    logger.info("Generating trading signals using SMA crossover...")
+def get_close_column(data):
+    """Finds the correct 'Close' column dynamically, accounting for ticker suffixes."""
+    data = flatten_columns(data)
 
-    # Validate we have enough data for window
-    min_required_days = max(SMA_SHORT_WINDOW, SMA_LONG_WINDOW)
-    if len(data) < min_required_days:
-        logger.warning(f"Data length ({len(data)}) is less than {min_required_days} days required for SMA calculations.")
-        raise ValueError("Not enough data for SMA window")
+    expected_col = f"Close_{STOCK_SYMBOL}"
+    if expected_col in data.columns:
+        return expected_col
 
-    # Validate that the 'Close' column exists
-    if 'Close' not in data.columns:
-        logger.error("Missing 'Close' column in data. Cannot generate signals.")
-        raise ValueError("Missing 'Close' column in data")
+    close_candidates = [col for col in data.columns if "Close" in col]
+    if not close_candidates:
+        raise ValueError(f"Could not find 'Close' column in data. Available columns: {list(data.columns)}")
 
-    # Param approach
-    data['SMA_short'] = data['Close'].rolling(window=SMA_SHORT_WINDOW).mean()
-    data['SMA_long']  = data['Close'].rolling(window=SMA_LONG_WINDOW).mean()
+    return close_candidates[0]
 
-    # Check if these new columns exist or contain NaNs
-    if data['SMA_short'].isna().all() or data['SMA_long'].isna().all():
-        logger.warning("Insufficient data for rolling window. All SMA values are NaN.")
-        raise ValueError("SMA calculations resulted in all NaN values.")
+def ensure_numeric(data, col_name):
+    """Convert column to numeric safely."""
+    data[col_name] = pd.to_numeric(data[col_name], errors='coerce')
 
-    data['Signal'] = np.where(data['SMA_short'] > data['SMA_long'], 1, -1)
+def sma_crossover_strategy(data, short_window=20, long_window=50):
+    """SMA Crossover Strategy: Ensures enough data is used for proper rolling calculations."""
+    close_col = get_close_column(data)
+    ensure_numeric(data, close_col)
 
-    buys = (data['Signal'] == 1).sum()
-    sells = (data['Signal'] == -1).sum()
-    logger.info(f"Trading signals generated. Buy signals: {buys}, Sell signals: {sells}")
+    # Ensure we have enough historical data before applying SMA
+    if len(data) < long_window + 10:
+        print(f"WARNING: Not enough historical data for SMA calculation (Required: {long_window + 10}, Available: {len(data)})")
+        return data
+
+    data["SMA_short"] = data[close_col].rolling(window=short_window).mean()
+    data["SMA_long"] = data[close_col].rolling(window=long_window).mean()
+    data["Signal"] = 0
+
+    # Ensure SMAs are correctly calculated before applying conditions
+    valid_sma = data["SMA_short"].notna() & data["SMA_long"].notna()
+
+    # Restore Exact Trend Change Logic
+    data.loc[valid_sma & (data["SMA_short"] > data["SMA_long"]), "Signal"] = 1  # Buy Signal
+    data.loc[valid_sma & (data["SMA_short"] < data["SMA_long"]), "Signal"] = -1  # Sell Signal
 
     return data
+
+def rsi_strategy(data, period=14, overbought=70, oversold=30):
+    """RSI Strategy: Generates trading signals based on Relative Strength Index (RSI)."""
+    close_col = get_close_column(data)
+    ensure_numeric(data, close_col)
+
+    delta = data[close_col].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    data["RSI"] = 100 - (100 / (1 + rs))
+    data["Signal"] = 0
+    data.loc[data["RSI"] > overbought, "Signal"] = -1  # Sell signal
+    data.loc[data["RSI"] < oversold, "Signal"] = 1  # Buy signal
+
+    return data
+
+def macd_strategy(data, short_window=12, long_window=26, signal_window=9):
+    """MACD Strategy: Generates trading signals based on MACD crossover."""
+    close_col = get_close_column(data)
+    ensure_numeric(data, close_col)
+
+    data["MACD"] = data[close_col].ewm(span=short_window, adjust=False).mean() - data[close_col].ewm(span=long_window, adjust=False).mean()
+    data["Signal_Line"] = data["MACD"].ewm(span=signal_window, adjust=False).mean()
+    data["Signal"] = 0
+    data.loc[data["MACD"] > data["Signal_Line"], "Signal"] = 1  # Buy signal
+    data.loc[data["MACD"] < data["Signal_Line"], "Signal"] = -1  # Sell signal
+
+    return data
+
+STRATEGIES = {
+    "sma_crossover": sma_crossover_strategy,
+    "rsi": rsi_strategy,
+    "macd": macd_strategy
+}
+
+def apply_strategy(data, strategy_name):
+    """Applies the selected strategy to the data."""
+    if strategy_name not in STRATEGIES:
+        raise ValueError(f"Strategy '{strategy_name}' not found! Available strategies: {list(STRATEGIES.keys())}")
+
+    return STRATEGIES[strategy_name](data)
+

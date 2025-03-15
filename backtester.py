@@ -3,8 +3,9 @@ import numpy as np
 import pandas as pd
 from rich.console import Console
 from rich.table import Table
-from config import MIN_PROFIT_THRESHOLD, STOP_LOSS_THRESHOLD, STOCK_SYMBOL
-from plotter import plot_trading_strategy  # Import the new plotter module
+from config import MIN_PROFIT_THRESHOLD, STOP_LOSS_THRESHOLD, STOCK_SYMBOL, SELECTED_STRATEGY
+from plotter import plot_trading_strategy
+from strategy import apply_strategy, get_close_column
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -37,14 +38,52 @@ def calculate_trade_statistics(trades, initial_capital, final_value, total_days)
         "CAGR (%)": cagr
     }
 
-    # Log performance metrics
     logger.info(f"Performance Metrics: {stats}")
 
     return stats
 
+import logging
+import numpy as np
+import pandas as pd
+from rich.console import Console
+from rich.table import Table
+from config import MIN_PROFIT_THRESHOLD, STOP_LOSS_THRESHOLD, STOCK_SYMBOL, SELECTED_STRATEGY
+from plotter import plot_trading_strategy
+from strategy import apply_strategy, get_close_column
+
+logger = logging.getLogger(__name__)
+console = Console()
+
 def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=None):
     """Backtest the trading strategy using historical data."""
     logger.info("Starting backtest...")
+
+    # Apply Selected Strategy
+    data = apply_strategy(data, SELECTED_STRATEGY)
+
+    # Get correct Close column name
+    close_col = get_close_column(data)
+
+    # Ensure SMA values are fully computed before filtering NaNs
+    data.dropna(subset=[close_col, "Signal"], inplace=True)
+
+    # Log first 10 rows after applying strategy to debug `Signal`
+    logger.info(f"First 10 rows after strategy applied:\n{data[[close_col, 'Signal']].head(10)}")
+
+    # Ensure that `Signal` column exists and contains valid values
+    if "Signal" not in data.columns:
+        logger.error("Strategy did not generate a 'Signal' column. Exiting backtest early.")
+        return
+
+    # Ensure at least some trade signals exist
+    if data["Signal"].isna().all():
+        logger.warning("All 'Signal' values are NaN. Exiting backtest early.")
+        return
+
+    # Check if all `Signal` values are zero (meaning strategy never triggers a trade)
+    if data["Signal"].nunique() == 1 and data["Signal"].unique()[0] == 0:
+        logger.warning("Strategy never triggered any buy or sell signals. Exiting backtest early.")
+        return
 
     capital = initial_capital
     position = 0
@@ -57,13 +96,13 @@ def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=
     trades = []
 
     for i in range(len(data) - 1):
-        current_price = data.iloc[i]['Close'].item()
+        current_price = data.iloc[i][close_col].item()
         current_date = data.index[i]
 
         if trade_start_date is None:
             trade_start_date = current_date
 
-        # Determine trade signal
+        # Determine trade signal (RESTORE AI MODEL)
         if use_ai and model is not None and scaler is not None:
             features = np.array([[data.iloc[i]['SMA_short'], data.iloc[i]['SMA_long']]], dtype=np.float64)
             features_scaled = scaler.transform(features.reshape(1, -1))
@@ -72,31 +111,30 @@ def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=
         else:
             trade_signal = int(data.iloc[i]['Signal'].item())
 
-        # Execute Buy Order
-        if trade_signal == 1 and capital > 0:
+        # Buy Execution (RESTORED OLD LOGIC)
+        if trade_signal == 1 and capital > 0 and position == 0:
             shares = capital / current_price
             position = shares
             last_buy_price = current_price
             buy_date = current_date
             buy_signals.append((current_date, current_price, shares))
-            trades.append([current_date, "BUY", current_price, shares, None, None])
-            capital = 0
+            logger.info(f"BUY {current_date} @ {current_price:.2f}")
+            capital = 0  # Fully invest capital
 
-        # Execute Sell Order
+        # Sell Execution (RESTORED OLD LOGIC)
         elif position > 0:
             price_change = (current_price - last_buy_price) / last_buy_price
             days_held = (current_date - buy_date).days if buy_date else 0
 
             if trade_signal == -1 or price_change >= MIN_PROFIT_THRESHOLD or price_change <= STOP_LOSS_THRESHOLD:
-                capital = position * current_price
+                capital = position * current_price  # Reinvest after selling
                 sell_signals.append((current_date, current_price, position, price_change * 100))
-                trades.append([current_date, "SELL", current_price, position, price_change * 100, days_held])
+                logger.info(f"SELL {current_date} @ {current_price:.2f} | Profit: {price_change * 100:.2f}%, Held: {days_held} days")
                 position = 0
 
         trade_end_date = current_date
 
-    # Final portfolio valuation
-    final_value = capital + (position * data.iloc[-1]['Close'].item())
+    final_value = capital + (position * data.iloc[-1][close_col].item())
     total_return = ((final_value - initial_capital) / initial_capital) * 100
     total_days = (trade_end_date - trade_start_date).days if trade_start_date and trade_end_date else 0
 
@@ -127,3 +165,4 @@ def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=
     plot_trading_strategy(data, STOCK_SYMBOL, buy_signals, sell_signals)
 
     logger.info("Backtest complete.")
+
