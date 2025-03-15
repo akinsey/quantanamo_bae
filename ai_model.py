@@ -1,6 +1,4 @@
-# ai_model.py
-
-import logging
+import logging # ai_model.py
 logger = logging.getLogger(__name__)
 
 import numpy as np
@@ -14,7 +12,15 @@ def train_ai_model(data):
     logger.info("Training AI model...")
     time.sleep(1)
 
+    if 'SMA_short' not in data.columns or 'SMA_long' not in data.columns:
+        logger.error("Missing required SMA columns in data for AI model.")
+        return None, None  # or raise an exception
+
     data = data.dropna()
+
+    if data.empty:
+        logger.error("Data is empty or NaN after dropna. Cannot train AI model.")
+        return None, None
 
     # Replace the old columns ['SMA_20', 'SMA_50'] with the new ones
     X = data[['SMA_short', 'SMA_long']]

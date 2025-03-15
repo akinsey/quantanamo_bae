@@ -1,9 +1,9 @@
-import logging
-logger = logging.getLogger(__name__)
-
+import logging # backtester.py
 import numpy as np
-import matplotlib.pyplot as plt
-from config import MIN_PROFIT_THRESHOLD, STOP_LOSS_THRESHOLD, STOCK_SYMBOL, MIN_PROFIT_THRESHOLD, STOP_LOSS_THRESHOLD
+from config import MIN_PROFIT_THRESHOLD, STOP_LOSS_THRESHOLD, STOCK_SYMBOL
+from plotter import plot_trading_strategy  # Import the new plotter module
+
+logger = logging.getLogger(__name__)
 
 def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=None):
     """Backtest the trading strategy using historical data."""
@@ -69,24 +69,11 @@ def backtest_trading_strategy(data, initial_capital, use_ai, model=None, scaler=
     total_days = (trade_end_date - trade_start_date).days if trade_start_date and trade_end_date else 0
 
     logger.info("Trade Summary:")
-    # We only show last 10 trades for brevity
-    logger.info(" | ".join(trade_log[-10:]))
+    logger.info(" | ".join(trade_log[-10:]))  # Show last 10 trades
     logger.info(f"Final Portfolio Value: ${final_value:.2f}")
     logger.info(f"Total Return: {total_return:.2f}% over {total_days} days")
-    logger.info("Backtest complete. Generating performance plot...")
 
-    # Plot trade visualization
-    plt.figure(figsize=(12, 6))
-    plt.plot(data.index, data['Close'], label='Close Price', color='steelblue')
+    # Call the new plot function
+    plot_trading_strategy(data, STOCK_SYMBOL, buy_signals, sell_signals)
 
-    for date, price, shares in buy_signals:
-        plt.scatter(date, price, marker='^', color='green', label='Buy Signal', alpha=1)
-
-    for date, price, shares, profit in sell_signals:
-        plt.scatter(date, price, marker='v', color='red', label='Sell Signal', alpha=1)
-
-    plt.title(f"Trading Strategy for {STOCK_SYMBOL}")
-    plt.xlabel("Date")
-    plt.ylabel("Stock Price")
-    plt.legend()
-    plt.show()
+    logger.info("Backtest complete.")
