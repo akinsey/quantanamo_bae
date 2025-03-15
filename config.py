@@ -1,6 +1,5 @@
-# config.py
+from datetime import datetime, timedelta # config.py
 # Existing imports and definitions...
-from datetime import datetime, timedelta
 
 # Stock Parameters (already present)
 STOCK_SYMBOL = "WMT"
