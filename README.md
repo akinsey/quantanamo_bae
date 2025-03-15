@@ -19,3 +19,7 @@ reinstall deps when changing/updating python version
 pip freeze | xargs pip uninstall -y
 pip install -r requirements.txt
 ```
+
+# Application flowchart
+
+![Application flowchart](https://i.imgur.com/8OewxYI.png)
