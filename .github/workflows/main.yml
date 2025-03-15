@@ -68,19 +68,9 @@ jobs:
           echo "Vermin exit code: $EXIT_CODE"
           exit $EXIT_CODE
 
-      - name: Fake Temp Test
+      - name: Run Tests
         run: |
-          echo "Running fake temp test..."
-          exit 0  # This ensures it always passes
-
-      # - name: Run Tests with pytest
-      #   run: |
-      #     pip install pytest
-      #     pytest tests/
-
-      # - name: Run Trading Bot
-      #   if: github.event_name == 'push' || github.event_name == 'schedule'
-      #   run: python main.py
+          python -m unittest discover -s tests -p "test_main.py"
 
   release:
     needs: build

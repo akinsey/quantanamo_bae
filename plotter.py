@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt # plotter.py
 import logging
 import os
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,12 @@ def plot_trading_strategy(data, stock_symbol, buy_signals, sell_signals, output_
     plt.legend()
 
     # Save the figure instead of displaying it
-    image_path = os.path.join(output_dir, f"{stock_symbol}_Trades.png")
+    output_dir = os.path.abspath(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
+
+    image_path = os.path.join(output_dir, f"{stock_symbol}_strategy.png")
     plt.savefig(image_path, dpi=300, bbox_inches="tight")
+    time.sleep(1)  # Allow time for filesystem sync before test runs
     plt.close()  # Close the figure to free up memory
 
     logger.info(f"Plot saved to {image_path}")
