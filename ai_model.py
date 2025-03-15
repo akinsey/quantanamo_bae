@@ -1,53 +1,67 @@
-import logging  # ai_model.py
-logger = logging.getLogger(__name__)
-
+import logging
 import numpy as np
 import time
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
+import pandas as pd
 
-def train_ai_model(data):
-    """
-    Train an AI model using stock market data to predict market movements.
-    Uses a RandomForestClassifier on SMA indicators.
+class AIModel:
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.model = RandomForestClassifier(n_estimators=100, random_state=42)
+        self.scaler = StandardScaler()
+        self.trained = False
 
-    :param data: Pandas DataFrame containing stock data with SMA features.
-    :return: Trained model and scaler for feature normalization.
-    """
-    logger.info("Training AI model...")
+    def train(self, data: pd.DataFrame):
+        """
+        Train an AI model using stock market data to predict market movements.
+        """
+        self.logger.info("Training AI model...")
 
-    # Validate required columns
-    if 'SMA_short' not in data.columns or 'SMA_long' not in data.columns:
-        logger.error("Missing required SMA columns in data for AI model.")
-        return None, None  # Could raise an exception instead
+        if 'SMA_short' not in data.columns or 'SMA_long' not in data.columns:
+            self.logger.error("Missing required SMA columns in data for AI model.")
+            return None, None
 
-    data = data.dropna()  # Remove NaN values
+        data = data.dropna()
+        if data.empty:
+            self.logger.error("Data is empty after dropping NaN values.")
+            return None, None
 
-    if data.empty:
-        logger.error("Data is empty after dropna(). Cannot train AI model.")
-        return None, None
+        # Feature selection: Using SMA values to predict price direction
+        X = data[['SMA_short', 'SMA_long']]
+        y = np.where(data['Close'].shift(-1) > data['Close'], 1, 0).flatten()
 
-    # Feature selection: Using SMA values to predict price direction
-    X = data[['SMA_short', 'SMA_long']]
-    y = np.where(data['Close'].shift(-1) > data['Close'], 1, 0).flatten()  # 1 if price increases, 0 otherwise
+        # Train/test split (80% training, 20% testing)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Train/test split (80% training, 20% testing)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # Normalize features
+        X_train_scaled = self.scaler.fit_transform(X_train)
+        X_test_scaled = self.scaler.transform(X_test)
 
-    # Normalize features
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+        # Train the model
+        start_time = time.time()
+        self.model.fit(X_train_scaled, y_train)
+        end_time = time.time()
+        self.logger.info(f"Model training completed in {end_time - start_time:.2f} seconds")
 
-    # Train the model
-    model = RandomForestClassifier(n_estimators=200, random_state=42)
-    model.fit(X_train_scaled, y_train)
+        # Evaluate accuracy
+        predictions = self.model.predict(X_test_scaled)
+        accuracy = accuracy_score(y_test, predictions)
+        self.logger.info(f"Model accuracy: {accuracy:.2%}")
 
-    # Evaluate accuracy
-    predictions = model.predict(X_test_scaled)
-    accuracy = accuracy_score(y_test, predictions)
-    logger.info(f"AI Model Training Accuracy: {accuracy:.2f}")
+        # Trained bool
+        self.trained = True
+        return self.model, self.scaler
 
-    return model, scaler
+    def predict(self, X_new: pd.DataFrame):
+        """
+        Make predictions using the trained AI model.
+        """
+        if not self.trained:
+            self.logger.error("Model must be trained before making predictions.")
+            return None
+
+        X_scaled = self.scaler.transform(X_new)
+        return self.model.predict(X_scaled)

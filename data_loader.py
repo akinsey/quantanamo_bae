@@ -17,7 +17,7 @@ def fetch_historical_data(stock_symbol, start_date, end_date):
     logger.info(f"Fetching historical data for {stock_symbol} from {start_date} to {end_date}")
 
     try:
-        data = yf.download(stock_symbol, start=start_date, end=end_date)
+        data = yf.download(stock_symbol, start=start_date, end=end_date, auto_adjust=True)
     except Exception as e:
         logger.error(f"Error fetching data from yfinance: {e}")
         return pd.DataFrame()  # Return an empty DataFrame on failure
