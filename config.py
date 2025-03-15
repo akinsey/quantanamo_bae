@@ -3,7 +3,7 @@ from datetime import datetime, timedelta  # config.py
 # ===========================
 # General Configuration
 # ===========================
-STOCK_SYMBOL = "WMT"  # Default stock to trade
+STOCK_SYMBOL = "TSLA"  # Default stock to trade
 
 # using a fixed datetime for today so we can keep the output consistent
 TODAY = datetime(2025, 3, 11, 5, 51, 45, 203360) # datetime.today()
