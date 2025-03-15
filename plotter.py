@@ -1,12 +1,17 @@
 import matplotlib.pyplot as plt # plotter.py
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
-def plot_trading_strategy(data, stock_symbol, buy_signals, sell_signals):
-    """Plot trading signals on a stock price chart."""
+def plot_trading_strategy(data, stock_symbol, buy_signals, sell_signals, output_dir="plots"):
+    """Plot trading signals on a stock price chart and save as an image."""
     logger.info(f"Generating plot for {stock_symbol}...")
 
+    # Ensure the output directory exists
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Create the figure
     plt.figure(figsize=(12, 6))
     plt.plot(data.index, data['Close'], label='Close Price', color='steelblue')
 
@@ -20,7 +25,10 @@ def plot_trading_strategy(data, stock_symbol, buy_signals, sell_signals):
     plt.xlabel("Date")
     plt.ylabel("Stock Price")
     plt.legend()
-    plt.show()
 
-    logger.info("Plot generated successfully.")
+    # Save the figure instead of displaying it
+    image_path = os.path.join(output_dir, f"{stock_symbol}_Trades.png")
+    plt.savefig(image_path, dpi=300, bbox_inches="tight")
+    plt.close()  # Close the figure to free up memory
 
+    logger.info(f"Plot saved to {image_path}")
