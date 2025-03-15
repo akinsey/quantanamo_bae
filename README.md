@@ -23,3 +23,5 @@ pip install -r requirements.txt
 # Application flowchart
 
 ![Application flowchart](https://i.imgur.com/8OewxYI.png)
+
+![Real flowchart](https://imgur.com/jYs5ZNs.png)

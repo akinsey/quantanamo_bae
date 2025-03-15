@@ -7,12 +7,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
 
 class AIModel:
-    def __init__(self):
+    def __init__(self, strategy):
         """Initialize the AI model with logging, classifier, and scaler."""
         self.logger = logging.getLogger(__name__)  # Logger for tracking model activities
         self.model = RandomForestClassifier(n_estimators=100, random_state=42)  # Random forest classifier with fixed randomness
         self.scaler = StandardScaler()  # StandardScaler for normalizing data
         self.trained = False  # Flag to track if the model has been trained
+        self.strategy = strategy  # Strategy instance (e.g., SMAStrategy or RSIStrategy)
 
     def train(self, data: pd.DataFrame):
         """Train the model using stock market data to predict market movements."""
