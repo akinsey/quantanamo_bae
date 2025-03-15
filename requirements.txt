@@ -1,34 +1,53 @@
-# Core data, math, and ML
+# Web Scraping Dependencies
+beautifulsoup4==4.13.3
+soupsieve==2.6
+requests==2.32.3
+urllib3==2.3.0
+idna==3.10
+charset-normalizer==3.4.1
+certifi==2025.1.31
+
+# Data Processing & Analysis
 numpy==1.26.4
 pandas==2.2.3
-vermin==1.6.0
+python-dateutil==2.9.0.post0
+pytz==2025.1
+tzdata==2025.1
+
+# Machine Learning & Scientific Computing
 scikit-learn==1.6.1
 scipy==1.15.2
 joblib==1.4.2
 threadpoolctl==3.5.0
 
-# Plotting
+# Financial Data Retrieval
+yfinance==0.2.54
+multitasking==0.0.11
+
+# Database ORM
+peewee==3.17.9
+
+# Visualization
 matplotlib==3.10.1
-kiwisolver==1.4.8
-cycler==0.12.1
 contourpy==1.3.1
+cycler==0.12.1
 fonttools==4.56.0
+kiwisolver==1.4.8
 pillow==11.1.0
 pyparsing==3.2.1
+
+# Markdown & Rich Text Formatting
+markdown-it-py==3.0.0
+mdurl==0.1.2
+Pygments==2.19.1
+rich==13.9.4
+
+# Utility & Miscellaneous
 packaging==24.2
 platformdirs==4.3.6
+typing_extensions==4.12.2
+six==1.17.0
+frozendict==2.4.6
 
-# Data fetching
-requests==2.32.3
-yfinance==0.2.54
-urllib3==2.3.0
-certifi==2025.1.31
-charset-normalizer==3.4.1
-idna==3.10
-
-# Dates/Times
-python-dateutil==2.9.0.post0
-pytz==2025.1
-
-# Helpful for parallel ops in yfinance
-multitasking==0.0.11
+# Python Compatibility Checker
+vermin==1.6.0

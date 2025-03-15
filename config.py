@@ -1,22 +1,31 @@
-from datetime import datetime, timedelta # config.py
-# Existing imports and definitions...
+from datetime import datetime, timedelta  # config.py
 
-# Stock Parameters (already present)
-STOCK_SYMBOL = "WMT"
-TRADE_WINDOW_START_DATE = (datetime.today() - timedelta(days=180)).strftime('%Y-%m-%d')
-TRADE_WINDOW_END_DATE = datetime.today().strftime('%Y-%m-%d')
+# ===========================
+# General Configuration
+# ===========================
+STOCK_SYMBOL = "TSLA"  # Default stock to trade
 
-# Trade Parameters (already present)
-INITIAL_CAPITAL = 32000
-MIN_PROFIT_THRESHOLD = 0.005  # 0.5% profit
-MIN_HOLD_DAYS = 1
-STOP_LOSS_THRESHOLD = -0.03  # -3% stop-loss
+# using a fixed datetime for today so we can keep the output consistent
+TODAY = datetime(2025, 3, 11, 5, 51, 45, 203360) # datetime.today()
+# pulling 180 days (more than we are using to graph, this is for sma strategy to work, allows "warmup")
+TRADE_WINDOW_START_DATE = (TODAY - timedelta(days=180)).strftime('%Y-%m-%d')
+TRADE_WINDOW_END_DATE = TODAY.strftime('%Y-%m-%d')
 
-# AI Toggle (already present)
-USE_AI = True
+# ===========================
+# Trading Parameters
+# ===========================
+INITIAL_CAPITAL = 32000  # Starting capital for trading
+MIN_PROFIT_THRESHOLD = 0.005  # 0.5% profit target for selling
+MIN_HOLD_DAYS = 1  # Minimum days to hold before selling
+STOP_LOSS_THRESHOLD = -0.03  # -3% stop-loss limit
 
-# =========================================
-#  NEW: Strategy Window Parameters
-# =========================================
-SMA_SHORT_WINDOW = 20
-SMA_LONG_WINDOW = 50
+# ===========================
+# AI Settings
+# ===========================
+USE_AI = True  # Toggle AI model usage
+
+# ===========================
+# Strategy Parameters
+# ===========================
+SMA_SHORT_WINDOW = 20  # Short-term Simple Moving Average window
+SMA_LONG_WINDOW = 50  # Long-term Simple Moving Average window
