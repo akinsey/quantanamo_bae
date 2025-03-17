@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 from strategies.strategy_base import Strategy
+from utils import extract_close_column
 
 logger = logging.getLogger(__name__)
 
@@ -11,27 +12,24 @@ class MACD(Strategy):
         self.slow_period = slow_period
         self.signal_period = signal_period
 
-    def ema(self, prices, period):
-        """Compute Exponential Moving Average."""
-        return prices.ewm(span=period, adjust=False).mean()
+    def get_name(self): return "MACD"
+
+    def get_feature_column_names(self): return ['MACD', 'MACD_signal']
 
     def generate_signals(self):
         """Generate MACD trading signals robustly."""
-        logger.info("Generating MACD trading signals...")
+        logger.info("Generating MACD trade signals...")
 
         # Robust selection of Close column
-        close_col = [col for col in self.data.columns if 'Close' in col]
-        if not close_col:
-            logger.error("Could not find any column containing 'Close'")
-            raise ValueError("Missing 'Close' column in data")
+        close_col = extract_close_column(self.data)
 
         close_prices = self.data[close_col[0]].astype(float)
-        logger.info(f"Using close column: {close_col[0]} with {len(close_prices)} rows")
 
         self.data['EMA_fast'] = self.ema(close_prices, self.fast_period)
         self.data['EMA_slow'] = self.ema(close_prices, self.slow_period)
 
         self.data['MACD'] = self.data['EMA_fast'] - self.data['EMA_slow']
+
         self.data['MACD_signal'] = self.ema(self.data['MACD'], self.signal_period)
         self.data['MACD_histogram'] = self.data['MACD'] - self.data['MACD_signal']
 
@@ -42,9 +40,10 @@ class MACD(Strategy):
 
         buys = (self.data['Signal'] == 1).sum()
         sells = (self.data['Signal'] == -1).sum()
-        logger.info(f"MACD signals generated. Buy signals: {buys}, Sell signals: {sells}")
+        logger.info(f"Buy signals: {buys}, Sell signals: {sells}")
 
         return self.data['Signal']
 
-    def get_ai_features(self):
-        return ['MACD', 'MACD_signal']
+    def ema(self, prices, period):
+        """Compute Exponential Moving Average."""
+        return prices.ewm(span=period, adjust=False).mean()

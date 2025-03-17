@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
+from utils import extract_close_column, extract_feature_columns
 
 class AIModel:
     def __init__(self, strategy):
@@ -23,26 +24,29 @@ class AIModel:
             self.logger.info("Model is already trained. Skipping training.")
             return self.model, self.scaler  # Return existing trained model and scaler
 
-        # Validate that the required columns exist in the data before proceeding
-        if 'SMA_short' not in data.columns or 'SMA_long' not in data.columns:
-            self.logger.error("Missing required SMA columns in data.")
-            return None, None  # Exit if required columns are missing
+        # Dynamically find exact column names based on strategy feature keys
+        # e.g. ['RSI'], ['SMA_short', 'SMA_long'], ['MACD', 'MACD_signal']
+        feature_column_names = self.strategy.get_feature_column_names()
+        actual_feature_columns = extract_feature_columns(data, feature_column_names)
 
-        # Remove rows with missing values to ensure the model receives complete data
-        data = data.dropna()
+        # Find the Close column dynamically
+        close_col = extract_close_column(data)
+
+        # Remove holes from the data, wipe the row if it has NaN
+        data = data.dropna(subset=actual_feature_columns + [close_col])
         if data.empty:
             self.logger.error("Data is empty after dropping NaN values.")
-            return None, None  # Exit if no valid data remains
+            return None, None
 
         # Extract input features (X) and target labels (y)
 
-        # Features (X): These are the inputs that help predict stock movement.
-        # We're using two moving averages (SMA_short and SMA_long) as indicators.
-        X = data[['SMA_short', 'SMA_long']]
+        # Features (X): These are the strategy features that help predict stock movement.
+        X = data[actual_feature_columns]
 
         # Target labels (y): The model should predict whether the stock price will go up (1) or down (0).
         # If tomorrow's closing price is higher than today's, assign 1; otherwise, assign 0.
-        y = data['Close'].shift(-1) > data['Close']  # Creates a Boolean series (True/False)
+        # e.g. We use the next days closing price
+        y = data[close_col].shift(-1) > data[close_col]  # Creates a Boolean series (True/False)
         y = y.astype(int)  # Converts Boolean values to integers (1 for up, 0 for down)
         y = y.values.reshape(-1,)  # Ensures y is formatted as a 1D NumPy array for sklearn
 

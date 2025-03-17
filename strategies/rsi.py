@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 from strategies.strategy_base import Strategy
+from utils import extract_close_column
 
 logger = logging.getLogger(__name__)
 
@@ -11,18 +12,18 @@ class RSI(Strategy):
         self.overbought = overbought
         self.oversold = oversold
 
+    def get_name(self): return "RSI"
+
+    def get_feature_column_names(self): return ["RSI"]
+
     def generate_signals(self):
         """Generate RSI signals using Wilder's smoothing method robustly."""
-        logger.info("Generating RSI trading signals...")
+        logger.info("Generating RSI trade signals...")
 
         # Robust selection of Close column
-        close_col = [col for col in self.data.columns if 'Close' in col]
-        if not close_col:
-            logger.error("Could not find any column containing 'Close'")
-            raise ValueError("Missing 'Close' column in data")
+        close_col = extract_close_column(self.data)
 
-        close_prices = self.data[close_col[0]].values.astype(float)
-        logger.info(f"Using close column: {close_col[0]} with {len(close_prices)} rows")
+        close_prices = self.data[close_col].values.astype(float)
 
         if len(close_prices) <= self.period:
             logger.error(f"Insufficient data ({len(close_prices)}) for RSI calculation, requires at least {self.period + 1}")
@@ -65,9 +66,6 @@ class RSI(Strategy):
 
         buys = (self.data['Signal'] == 1).sum()
         sells = (self.data['Signal'] == -1).sum()
-        logger.info(f"RSI signals generated. Buy signals: {buys}, Sell signals: {sells}")
+        logger.info(f"Buy signals: {buys}, Sell signals: {sells}")
 
         return self.data['Signal']
-
-    def get_ai_features(self):
-        return ['RSI']
