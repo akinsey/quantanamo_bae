@@ -108,7 +108,7 @@ class QuantanamoBae:
                 self.logger.info(f"Configuration: \n{config}")
             self.prepare_data()
             self.train_and_backtest()
-            self.logger.info("We hope you enjoed your stay!")
+            self.logger.info("We hope you enjoyed your stay!")
         except Exception as e:
             self.logger.critical(f"Fatal error occurred: {e}", exc_info=True)
             sys.exit(1)
