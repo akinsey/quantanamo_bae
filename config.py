@@ -30,3 +30,5 @@ USE_AI = True  # Toggle AI model usage
 STRATEGY_NAME = "SMA"  # Default strategy
 SMA_SHORT_WINDOW = 20  # Short-term Simple Moving Average window
 SMA_LONG_WINDOW = 50  # Long-term Simple Moving Average window
+
+DEBUG=False

@@ -11,9 +11,13 @@ class SMA(Strategy):
         self.short_window = short_window
         self.long_window = long_window
 
+    def get_name(self): return "SMA"
+
+    def get_feature_column_names(self): return ["SMA_short", "SMA_long"]
+
     def generate_signals(self):
         """Generate buy/sell signals based on SMA crossover."""
-        logger.info("Generating trading signals using SMA crossover...")
+        logger.info("Generating SMA trade signals...")
 
         # Validate sufficient data for SMA calculations
         min_required_days = max(SMA_SHORT_WINDOW, SMA_LONG_WINDOW)
@@ -40,10 +44,7 @@ class SMA(Strategy):
         # Logging trade signal counts
         buys = (self.data['Signal'] == 1).sum()
         sells = (self.data['Signal'] == -1).sum()
-        logger.info(f"Trading signals generated. Buy signals: {buys}, Sell signals: {sells}")
+        logger.info(f"Buy signals: {buys}, Sell signals: {sells}")
 
         return self.data["Signal"]
 
-    def get_ai_features(self):
-        """Specify features used for AI training."""
-        return ["SMA_short", "SMA_long"]

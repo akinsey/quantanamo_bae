@@ -5,11 +5,18 @@ class Strategy:
         self.data = data  # Historical market data
 
     @abstractmethod
-    def generate_signals(self):
-        """Each strategy must implement this method to generate trade signals."""
+    def get_name(self):
+        """Each strategy must implement this method to specify the name of the columns to use
+        as features when AI training."""
         pass
 
     @abstractmethod
-    def get_ai_features(self):
-        """Each strategy must implement this method to specify features used for AI training."""
+    def get_feature_column_names(self):
+        """Each strategy must implement this method to specify the name of the columns to use
+        as features when AI training."""
+        pass
+
+    @abstractmethod
+    def generate_signals(self):
+        """Each strategy must implement this method to generate trade signals."""
         pass
