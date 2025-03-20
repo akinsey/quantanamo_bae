@@ -2,8 +2,6 @@ import pytest
 import pandas as pd
 import numpy as np
 from unittest.mock import MagicMock
-import sys
-sys.path.insert(0, '..')
 from backtester import Backtester
 
 # Sample DataFrame for basic tests
