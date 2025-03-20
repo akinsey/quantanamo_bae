@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import sys
 sys.path.insert(0, '..')
 from backtester import Backtester
+
 # Sample DataFrame for basic tests
 @pytest.fixture
 def sample_data():
