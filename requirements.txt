@@ -51,3 +51,6 @@ frozendict==2.4.6
 
 # Python Compatibility Checker
 vermin==1.6.0
+
+# Testing Framework
+pytest==8.3.5
