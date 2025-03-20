@@ -69,6 +69,9 @@ class Backtester:
                     return 0  # Default to hold signal if features missing
                 actual_features.append(row[matched_cols[0]])
 
+            # TODO: check if we can grab the predictions from the ai model itself instead
+            # of regenerating them here, is there a reason this is duplicated, is it even duplicated
+            #
             # Reshape correctly for scaler and model (1 sample, N features)
             features = np.array([actual_features], dtype=np.float64)
             # features = np.array([[row['SMA_short'], row['SMA_long']]], dtype=np.float64)
