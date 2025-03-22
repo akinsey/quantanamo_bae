@@ -27,6 +27,9 @@ class AIModel:
 
         # Dynamically find exact column names based on strategy feature keys
         # e.g. ['RSI'], ['SMA_short', 'SMA_long'], ['MACD', 'MACD_signal']
+        ### <TODO: tell don't ask - this code needs to be consolidated; the meaning is not apparent in this context
+        ### the functionality we want exposed is something like
+        ### "clean_data(data)"
         feature_column_names = self.strategy.get_feature_column_names()
         actual_feature_columns = extract_feature_columns(data, feature_column_names)
 
@@ -35,6 +38,7 @@ class AIModel:
 
         # Remove holes from the data, wipe the row if it has NaN
         data = data.dropna(subset=actual_feature_columns + [close_col])
+        ### TODO>
         if data.empty:
             self.logger.error("Data is empty after dropping NaN values.")
             return None, None
