@@ -12,6 +12,7 @@ class AIModel:
         """Initialize the AI model with logging, classifier, and scaler."""
         self.logger = logging.getLogger(__name__)  # Logger for tracking model activities
         self.model = RandomForestClassifier(n_estimators=100, random_state=42)  # Random forest classifier with fixed randomness
+        # 100 trees in the forest and randomness seeded by integer 42
         self.scaler = StandardScaler()  # StandardScaler for normalizing data
         self.trained = False  # Flag to track if the model has been trained
         self.strategy = strategy  # Strategy instance (e.g., SMAStrategy or RSIStrategy)
