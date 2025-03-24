@@ -38,10 +38,11 @@ class AIModel:
 
         # Remove holes from the data, wipe the row if it has NaN
         data = data.dropna(subset=actual_feature_columns + [close_col])
-        ### TODO>
+
         if data.empty:
             self.logger.error("Data is empty after dropping NaN values.")
             return None, None
+        ### TODO>
 
         # Extract input features (X) and target labels (y)
 
