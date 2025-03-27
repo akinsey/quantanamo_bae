@@ -26,7 +26,7 @@ class RFC_MLModel:
             self.logger.info("Model is already trained. Skipping training.")
             return self.model, self.scaler  # Return existing trained model and scaler
 
-        # get closing prices and indicator data,
+        # get daily gain and indicator data,
         # removing any rows from data for which
         # closing price and indicator are not populated
         (data, daily_gain_binary_data, indicator_data) = juice(data, self.indicator_strategy)

@@ -37,7 +37,7 @@ def extract_feature_columns(data, feature_column_names):
 
     return feature_columns
 
-# get closing prices and indicator data,
+# get daily gain and indicator data,
 # removing any rows from data for which
 # closing price and indicator are not populated
 def juice(data, strategy):
