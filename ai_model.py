@@ -16,6 +16,7 @@ class RFC_MLModel:
         self.scaler = StandardScaler()  # StandardScaler for normalizing data
         self.trained = False  # Flag to track if the model has been trained
         self.indicator_strategy = strategy  # Strategy instance (e.g., SMAStrategy or RSIStrategy)
+        self.accuracy = 0
 
     def train(self, data: pd.DataFrame):
         """Train the model using stock market data to predict market movements."""
@@ -58,10 +59,12 @@ class RFC_MLModel:
 
         # Evaluate the trained model using the test set
         predictions = self.model.predict(X_test_scaled)  # Predict stock movement
-        accuracy = accuracy_score(y_test, predictions)  # Calculate accuracy of the predictions
-        self.logger.info(f"Model trained with accuracy: {accuracy * 100:.2f}%")
+        self.accuracy = accuracy_score(y_test, predictions)
 
         self.trained = True  # Set flag to indicate that the model has been trained
 
         # TODO: maybe don't return these:  just save the class instance and use it later
         return self.model, self.scaler  # Return trained model and scaler
+
+    def log_accuracy(self):
+        self.logger.info(f"Model trained with accuracy: {self.accuracy * 100:.2f}%")

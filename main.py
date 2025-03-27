@@ -69,6 +69,8 @@ class QuantanamoBae:
         if self.use_ai:
             ai_model = RFC_MLModel(self.strategy)
             self.model, self.scaler = ai_model.train(self.data)
+            # log model's training accuracy
+            ai_model.log_accuracy()
 
         backtester = Backtester(
             self.data, INITIAL_CAPITAL, self.use_ai, self.strategy, self.model, self.scaler
