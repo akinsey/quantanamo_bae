@@ -49,7 +49,7 @@ class RFC_MLModel:
 
         # Split the dataset into training and testing sets
         # 80% of the data is used for training, and 20% is reserved for testing
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(indicator_data, y, test_size=0.2, random_state=42)
 
         # Standardize (normalize) feature values to bring them to a similar scale
         # NOTES: standardizing (or normalizing) the feature values means making sure
