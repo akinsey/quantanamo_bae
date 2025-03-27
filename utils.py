@@ -41,7 +41,7 @@ def extract_feature_columns(data, feature_column_names):
 # e.g. ['RSI'], ['SMA_short', 'SMA_long'], ['MACD', 'MACD_signal']
 def extract_cols(data, strategy):
         feature_column_names = strategy.get_feature_column_names()
-        actual_feature_columns = self.extract_feature_columns(data, feature_column_names)
+        actual_feature_columns = extract_feature_columns(data, feature_column_names)
 
         # Find the Close column dynamically
         close_col = extract_close_column(data)
