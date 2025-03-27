@@ -9,7 +9,7 @@ from utils import extract_cols
 
 class AIModel:
     def __init__(self, strategy):
-        """Initialize the AI model with logging, classifier, and scaler."""
+        """Initialize the Random Forest Classifier ML model with logging, model, and scaler."""
         self.logger = logging.getLogger(__name__)  # Logger for tracking model activities
         self.model = RandomForestClassifier(n_estimators=100, random_state=42)  # Random forest classifier with fixed randomness
         # 100 trees in the forest and randomness seeded by integer 42
