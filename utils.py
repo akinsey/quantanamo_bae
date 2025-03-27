@@ -37,18 +37,23 @@ def extract_feature_columns(data, feature_column_names):
 
     return feature_columns
 
-# Dynamically find exact column names based on strategy feature keys
-# e.g. ['RSI'], ['SMA_short', 'SMA_long'], ['MACD', 'MACD_signal']
+# get columns for closing price and indicators
+# removing any rows from data for which
+# closing price and indicator are not populated
 def extract_cols(data, strategy):
-        feature_column_names = strategy.get_feature_column_names()
-        actual_feature_columns = extract_feature_columns(data, feature_column_names)
+        # Get indicator column names based on strategy feature keys
+        # e.g. ['RSI'], ['SMA_short', 'SMA_long'], ['MACD', 'MACD_signal']
+        indicator_strategy_column_names = strategy.get_feature_column_names()
+        # get indicator data columns corresponding to the selected indicator strategy's column names from `data`
+        indicator_data_columns = extract_feature_columns(data, indicator_strategy_column_names)
 
-        # Find the Close column dynamically
-        close_col = extract_close_column(data)
+        # get closing price column from `data`
+        closing_price_column = extract_close_column(data)
 
-        # Remove holes from the data, wipe the row if it has NaN
+        # remove rows in `data` that don't have corresponding values
+        # in indicator data or closing price columns
         return (
-                data.dropna(subset=actual_feature_columns + [close_col]),
-                close_col,
-                actual_feature_columns
+                data.dropna(subset=indicator_data_columns + [closing_price_column]),
+                closing_price_column,
+                indicator_data_columns
                 )
