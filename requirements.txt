@@ -54,3 +54,6 @@ vermin==1.6.0
 
 # Testing Framework
 pytest==8.3.5
+
+# sqlite driver (for compatibility with amazon linux)
+pysqlite3==0.5.4
