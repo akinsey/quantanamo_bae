@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
-from utils import extract_cols
+from utils import juice
 
 class RFC_MLModel:
     def __init__(self, strategy):
@@ -25,20 +25,14 @@ class RFC_MLModel:
             self.logger.info("Model is already trained. Skipping training.")
             return self.model, self.scaler  # Return existing trained model and scaler
 
-        # get columns for closing price and indicators
+        # get closing prices and indicator data,
         # removing any rows from data for which
         # closing price and indicator are not populated
-        (data, closing_price_column, indicator_columns) = extract_cols(data, self.indicator_strategy)
+        (data, closing_prices, indicator_data) = juice(data, self.indicator_strategy)
 
         if data.empty:
             self.logger.error("Data is empty after dropping NaN values.")
             return None, None
-
-        ## get data from `data` based on processing columns
-        # computed daily indicator data for the given strategy on the selected ticker
-        indicator_data = data[indicator_columns]
-        # daily closing prices for the selected ticker
-        closing_prices = data[closing_price_column]
 
         # Target labels (y): The model should predict whether the stock price will go up (1) or down (0).
         # If tomorrow's closing price is higher than today's, assign 1; otherwise, assign 0.

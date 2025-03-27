@@ -37,23 +37,26 @@ def extract_feature_columns(data, feature_column_names):
 
     return feature_columns
 
-# get columns for closing price and indicators
+# get closing prices and indicator data,
 # removing any rows from data for which
 # closing price and indicator are not populated
-def extract_cols(data, strategy):
+def juice(data, strategy):
         # Get indicator column names based on strategy feature keys
         # e.g. ['RSI'], ['SMA_short', 'SMA_long'], ['MACD', 'MACD_signal']
         indicator_strategy_column_names = strategy.get_feature_column_names()
-        # get indicator data columns corresponding to the selected indicator strategy's column names from `data`
-        indicator_data_columns = extract_feature_columns(data, indicator_strategy_column_names)
-
+        # get indicator data columns from `data` corresponding to the selected indicator strategy's column names
+        indicator_columns = extract_feature_columns(data, indicator_strategy_column_names)
         # get closing price column from `data`
         closing_price_column = extract_close_column(data)
 
         # remove rows in `data` that don't have corresponding values
         # in indicator data or closing price columns
-        return (
-                data.dropna(subset=indicator_data_columns + [closing_price_column]),
-                closing_price_column,
-                indicator_data_columns
-                )
+        data.dropna(subset=indicator_columns + [closing_price_column])
+
+        ## get data from `data` based on processing columns
+        # computed daily indicator data for the given strategy on the selected ticker
+        indicator_data = data[indicator_columns]
+        # daily closing prices for the selected ticker
+        closing_prices = data[closing_price_column]
+
+        return (data, closing_prices, indicator_data)
