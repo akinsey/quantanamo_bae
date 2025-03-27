@@ -34,15 +34,16 @@ class RFC_MLModel:
             self.logger.error("Data is empty after dropping NaN values.")
             return None, None
 
-        # Extract input features (X) and target labels (y)
-
-        # Features (X): These are the strategy features that help predict stock movement.
-        X = data[indicator_columns]
+        ## get data from `data` based on processing columns
+        # computed daily indicator data for the given strategy on the selected ticker
+        indicator_data = data[indicator_columns]
+        # daily closing prices for the selected ticker
+        closing_prices = data[closing_price_column]
 
         # Target labels (y): The model should predict whether the stock price will go up (1) or down (0).
         # If tomorrow's closing price is higher than today's, assign 1; otherwise, assign 0.
         # e.g. We use the next days closing price
-        y = data[closing_price_column].shift(-1) > data[closing_price_column]  # Creates a Boolean series (True/False)
+        y = closing_prices.shift(-1) > closing_prices  # Creates a Boolean series (True/False)
         y = y.astype(int)  # Converts Boolean values to integers (1 for up, 0 for down)
         y = y.values.reshape(-1,)  # Ensures y is formatted as a 1D NumPy array for sklearn
 
