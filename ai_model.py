@@ -35,33 +35,47 @@ class RFC_MLModel:
             self.logger.error("Data is empty after dropping NaN values.")
             return None, None
 
-        # Target labels (y): The model should predict whether the stock price will go up (1) or down (0).
-        # If tomorrow's closing price is higher than today's, assign 1; otherwise, assign 0.
-        # e.g. We use the next days closing price
-        y = closing_prices.shift(-1) > closing_prices  # Creates a Boolean series (True/False)
-        y = y.astype(int)  # Converts Boolean values to integers (1 for up, 0 for down)
-        y = y.values.reshape(-1,)  # Ensures y is formatted as a 1D NumPy array for sklearn
+        ## Compute whether the stock price went up (1) or down (0).
+        ## Used by the ML model during training to classify gain or loss based on indicator values
+        # shift prices by a day to check if the current day's closing price
+        # is greater than the previous day's closing price (gain)
+        daily_gain_binary_data = closing_prices.shift(-1) > closing_prices
+        # Converts Boolean values to integers (1 for gain, 0 for no gain)
+        # and reformats as a 1D NumPy array for sklearn
+        daily_gain_binary_data = daily_gain_binary_data.astype(int).values.reshape(-1,)
 
-        # Split the dataset into training and testing sets
+        ## Split the dataset into training and testing sets
         # 80% of the data is used for training, and 20% is reserved for testing
-        X_train, X_test, y_train, y_test = train_test_split(indicator_data, y, test_size=0.2, random_state=42)
+        verification_reserve_percent = 20
+        training_indicator_data, testing_indicator_data, training_daily_gain_binary_data, testing_daily_gain_binary_data = train_test_split(indicator_data, daily_gain_binary_data, test_size=verification_reserve_percent / 100, random_state=42)
 
-        # Standardize (normalize) feature values to bring them to a similar scale
-        # NOTES: standardizing (or normalizing) the feature values means making sure
-        # all numbers are on a similar scale. For example, if one feature (SMA_short) has
-        # values around 10 and another feature (SMA_long) has values around 1000, the
-        # model might think the bigger numbers are more important just because they’re bigger.
-        X_train_scaled = self.scaler.fit_transform(X_train)  # Fit and transform training data
-        X_test_scaled = self.scaler.transform(X_test)  # Transform test data using the same scaler
+        ## Normalize indicator data
+        # NOTES: Since we are working with multiple columns of indicator data,
+        # standardizing (or normalizing) the feature values means making sure
+        # all values are on a similar scale.
+        #
+        # For example, indicator (SMA_short) has values around 10 and
+        # another indicator (SMA_long) has values around 1000...
+        # The scaler will transform both columns to fit within a range from 0 to 1 (or -1 to +1)
+        # to ensure they are compared with equal weight
+        #
+        # Normalizing can also ensure that more recent data is treated as more important than
+        # older data
 
-        # Train the model using the training dataset
-        self.model.fit(X_train_scaled, y_train)
+        # Fit and transform training data
+        training_indicator_data = self.scaler.fit_transform(training_indicator_data)
+        # Transform test data using the same scaler
+        testing_indicator_data = self.scaler.transform(testing_indicator_data)
 
-        ## Evaluate the trained model using the test set and save accuracy
-        # Predict stock movement
-        predictions = self.model.predict(X_test_scaled)
-        # Calculate accuracy of the predictions
-        self.accuracy = accuracy_score(y_test, predictions)
+        # Populate/train the ML model by fitting the indicator data to the daily gain/loss data
+        # using the data reserved for training
+        self.model.fit(training_indicator_data, training_daily_gain_binary_data)
+
+        ## Evaluate the accuracy the model
+        # Run the trained ML model using the data reserved for testing to predict gain/loss
+        predictions = self.model.predict(testing_indicator_data)
+        # Calculate accuracy of the predictions against the actual gain/loss data
+        self.accuracy = accuracy_score(testing_daily_gain_binary_data, predictions)
 
         # Set flag to indicate that the model has been trained
         self.trained = True
