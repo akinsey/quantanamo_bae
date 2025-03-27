@@ -57,11 +57,14 @@ class RFC_MLModel:
         # Train the model using the training dataset
         self.model.fit(X_train_scaled, y_train)
 
-        # Evaluate the trained model using the test set
-        predictions = self.model.predict(X_test_scaled)  # Predict stock movement
+        ## Evaluate the trained model using the test set and save accuracy
+        # Predict stock movement
+        predictions = self.model.predict(X_test_scaled)
+        # Calculate accuracy of the predictions
         self.accuracy = accuracy_score(y_test, predictions)
 
-        self.trained = True  # Set flag to indicate that the model has been trained
+        # Set flag to indicate that the model has been trained
+        self.trained = True
 
         # TODO: maybe don't return these:  just save the class instance and use it later
         return self.model, self.scaler  # Return trained model and scaler
