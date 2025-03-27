@@ -15,7 +15,7 @@ class RFC_MLModel:
         # 100 trees in the forest and randomness seeded by integer 42
         self.scaler = StandardScaler()  # StandardScaler for normalizing data
         self.trained = False  # Flag to track if the model has been trained
-        self.strategy = strategy  # Strategy instance (e.g., SMAStrategy or RSIStrategy)
+        self.indicator_strategy = strategy  # Strategy instance (e.g., SMAStrategy or RSIStrategy)
 
     def train(self, data: pd.DataFrame):
         """Train the model using stock market data to predict market movements."""
@@ -28,7 +28,7 @@ class RFC_MLModel:
         # get columns for closing price and indicators
         # removing any rows from data for which
         # closing price and indicator are not populated
-        (data, close_col, actual_feature_columns) = extract_cols(data, self.strategy)
+        (data, closing_price_column, indicator_columns) = extract_cols(data, self.indicator_strategy)
 
         if data.empty:
             self.logger.error("Data is empty after dropping NaN values.")
@@ -37,12 +37,12 @@ class RFC_MLModel:
         # Extract input features (X) and target labels (y)
 
         # Features (X): These are the strategy features that help predict stock movement.
-        X = data[actual_feature_columns]
+        X = data[indicator_columns]
 
         # Target labels (y): The model should predict whether the stock price will go up (1) or down (0).
         # If tomorrow's closing price is higher than today's, assign 1; otherwise, assign 0.
         # e.g. We use the next days closing price
-        y = data[close_col].shift(-1) > data[close_col]  # Creates a Boolean series (True/False)
+        y = data[closing_price_column].shift(-1) > data[closing_price_column]  # Creates a Boolean series (True/False)
         y = y.astype(int)  # Converts Boolean values to integers (1 for up, 0 for down)
         y = y.values.reshape(-1,)  # Ensures y is formatted as a 1D NumPy array for sklearn
 
