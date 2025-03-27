@@ -62,4 +62,6 @@ class RFC_MLModel:
         self.logger.info(f"Model trained with accuracy: {accuracy * 100:.2f}%")
 
         self.trained = True  # Set flag to indicate that the model has been trained
+
+        # TODO: maybe don't return these:  just save the class instance and use it later
         return self.model, self.scaler  # Return trained model and scaler
