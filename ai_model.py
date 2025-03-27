@@ -25,6 +25,9 @@ class RFC_MLModel:
             self.logger.info("Model is already trained. Skipping training.")
             return self.model, self.scaler  # Return existing trained model and scaler
 
+        # get columns for closing price and indicators
+        # removing any rows from data for which
+        # closing price and indicator are not populated
         (data, close_col, actual_feature_columns) = extract_cols(data, self.strategy)
 
         if data.empty:
