@@ -36,3 +36,19 @@ def extract_feature_columns(data, feature_column_names):
         feature_columns.append(matched_cols[0])
 
     return feature_columns
+
+# Dynamically find exact column names based on strategy feature keys
+# e.g. ['RSI'], ['SMA_short', 'SMA_long'], ['MACD', 'MACD_signal']
+def extract_cols(data, strategy):
+        feature_column_names = strategy.get_feature_column_names()
+        actual_feature_columns = self.extract_feature_columns(data, feature_column_names)
+
+        # Find the Close column dynamically
+        close_col = extract_close_column(data)
+
+        # Remove holes from the data, wipe the row if it has NaN
+        return (
+                data.dropna(subset=actual_feature_columns + [close_col]),
+                close_col,
+                actual_feature_columns
+                )
