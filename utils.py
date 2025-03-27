@@ -59,4 +59,13 @@ def juice(data, strategy):
     # daily closing prices for the selected ticker
     closing_prices = data[closing_price_column]
 
-    return (data, closing_prices, indicator_data)
+    ## Compute whether the stock price went up (1) or down (0).
+    ## Used by the ML model during training to classify gain or loss based on indicator values
+    # shift prices by a day to check if the current day's closing price
+    # is greater than the previous day's closing price (gain)
+    daily_gain_binary_data = closing_prices.shift(-1) > closing_prices
+    # Converts Boolean values to integers (1 for gain, 0 for no gain)
+    # and reformats as a 1D NumPy array for sklearn
+    daily_gain_binary_data = daily_gain_binary_data.astype(int).values.reshape(-1,)
+
+    return (data, daily_gain_binary_data, indicator_data)

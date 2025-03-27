@@ -29,20 +29,11 @@ class RFC_MLModel:
         # get closing prices and indicator data,
         # removing any rows from data for which
         # closing price and indicator are not populated
-        (data, closing_prices, indicator_data) = juice(data, self.indicator_strategy)
+        (data, daily_gain_binary_data, indicator_data) = juice(data, self.indicator_strategy)
 
         if data.empty:
             self.logger.error("Data is empty after dropping NaN values.")
             return None, None
-
-        ## Compute whether the stock price went up (1) or down (0).
-        ## Used by the ML model during training to classify gain or loss based on indicator values
-        # shift prices by a day to check if the current day's closing price
-        # is greater than the previous day's closing price (gain)
-        daily_gain_binary_data = closing_prices.shift(-1) > closing_prices
-        # Converts Boolean values to integers (1 for gain, 0 for no gain)
-        # and reformats as a 1D NumPy array for sklearn
-        daily_gain_binary_data = daily_gain_binary_data.astype(int).values.reshape(-1,)
 
         ## Split the dataset into training and testing sets
         # 80% of the data is used for training, and 20% is reserved for testing
