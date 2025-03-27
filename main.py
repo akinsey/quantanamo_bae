@@ -4,7 +4,7 @@ import sys
 
 from config import *
 from data_loader import fetch_stock_data
-from ai_model import AIModel
+from ai_model import RFC_MLModel
 from backtester import Backtester
 from plotter import plot_trading_strategy
 from strategies.sma import SMA
@@ -67,7 +67,7 @@ class QuantanamoBae:
     def train_and_backtest(self):
         """Train AI model (if enabled) and perform backtesting."""
         if self.use_ai:
-            ai_model = AIModel(self.strategy)
+            ai_model = RFC_MLModel(self.strategy)
             self.model, self.scaler = ai_model.train(self.data)
 
         backtester = Backtester(

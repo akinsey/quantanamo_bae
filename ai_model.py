@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
 from utils import extract_cols
 
-class AIModel:
+class RFC_MLModel:
     def __init__(self, strategy):
         """Initialize the Random Forest Classifier ML model with logging, model, and scaler."""
         self.logger = logging.getLogger(__name__)  # Logger for tracking model activities
