@@ -62,7 +62,8 @@ class QuantanamoBae:
 
         StrategyClass = self.select_strategy()
         self.strategy = StrategyClass(self.data)
-        self.data["Signal"] = self.strategy.generate_signals()
+        self.data["Signal"] = self.strategy.generate_signals_and_clean()
+
 
     def train_and_backtest(self):
         """Train AI model (if enabled) and perform backtesting."""
